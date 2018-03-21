@@ -46,6 +46,6 @@ To recreate the device you need 3 components:
 * You can change constant _num_conv = 2_ in r05_verilog_generator_neural_net_structure.py to 1, 2 or 4 convolutional 
 blocks which will work in parallel. More blocks will require more LE in FPGA, but increase the overall speed.
 
-* Comparison table for different bit weights and number of convolution blocks below.
+* Comparison table for different bit weights and number of convolution blocks below (red rows: unable to synthesize, due to Cyclone IV limitations).
    
 ![Used FPGA resources](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Info-Table.png "Used FPGA resources")
