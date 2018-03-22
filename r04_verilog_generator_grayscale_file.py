@@ -131,7 +131,7 @@ def grayscale(directory, bit_size):
 
 if __name__ == '__main__':
 
-    # Where to store neural net verilog
+    # Where to store verilog, which converts RGB image from camera to 28x28 grayscale image
     output_directory = "./verilog/code/gray_28x28/"
     # Bit size of weights (including sign)
     bit_size = get_optimal_bit_for_weights() + 1
