@@ -1537,8 +1537,8 @@ if __name__ == '__main__':
             w = layer.get_weights()
             conv_block_size_1 = len(w[0])
             conv_block_size_2 = len(w[0][0])
-            max_address_value += len(w[0][0][0][0])*len(w[0][0][0])*len(w[0][0])*len(w[0]*len(w))
-            max_weights_per_layer_1 = int((len(w[0][0][0][0])*len(w[0][0][0])*len(w[0][0])*len(w[0]*len(w)))/(conv_block_size_1*conv_block_size_2))
+            max_address_value += len(w[0][0][0][0])*len(w[0][0][0])*len(w[0][0])*len(w[0])
+            max_weights_per_layer_1 = len(w[0][0][0][0])*len(w[0][0][0])
             if max_weights_per_layer_1 > max_weights_per_layer:
                 max_weights_per_layer = max_weights_per_layer_1
         elif 'MaxPooling2D' in str(type(layer)):
@@ -1549,8 +1549,8 @@ if __name__ == '__main__':
             total_dense_layers_number += 1
             dense_inputs.append(layer.input_shape[1])
             dense_outputs.append(layer.output_shape[1])
-            max_address_value += len(layer.get_weights()[0][0]) * len(w[0] * len(w))
-            max_weights_per_layer_1 = int(len(w[0][0]) * len(w[0] * len(w))/(conv_block_size_1*conv_block_size_2))+1
+            max_address_value += len(layer.get_weights()[0][0]) * len(w[0])
+            max_weights_per_layer_1 = int(len(w[0][0]) * len(w[0])/(conv_block_size_1*conv_block_size_2)) + 1
             if max_weights_per_layer_1 > max_weights_per_layer:
                 max_weights_per_layer = max_weights_per_layer_1
         if i == len(model.layers) - 1:
