@@ -1497,27 +1497,27 @@ if __name__ == '__main__':
 
     list = go_mat_model(model, bit_size-1)
 
-    # Максимальный размер картинки в нейросети. Равно 28.
+    # Maximum size of image for neural net. Equal to 28.
     max_input_image_size = 0
-    # Число, равное кол-ву данных в database: начальная картинка и все веса
+    # Count of data in database: initial image and all weights
     max_address_value = 0
-    # Количество "шагов" в нейросети. под шагом подразумевается любое действие: загрузка данных, выполнение сверточного слоя или maxp слоя.
+    # Number of steps in neural net. Step means any action like loading data, processing convolution or maxpooling layer.
     steps_count = 0
-    # Размер сверточного блока. Равно 3.
+    # Size of convolution block. Equal to 3.
     conv_block_size = 0
-    # Самое больше количество весов из всех слоев, поделенное на 9, т.к. веса упаковываются в память по 9 штук и вызываются сразу всей пачкой.
+    # Maximum weights for all layers, divided by 9, because all weights packed by 9 numbers, to be called in one tact.
     max_weights_per_layer = 0
-    # Максимальное число выходных картинок из всех сверточных слоев
+    # Maximum number of output feature maps for all convolution layers
     max_conv_output_size = 0
-    # Максимальное число входных картинок из всех сверточных слоев
+    # Maximum number of input feature maps for all convolution layers
     max_conv_input_size = 0
-    # Количество конечных вариантов ответа сети. Равно 11.
+    # Number of neurons on final classification layer. Equal to 11.
     output_neurons_count = 0
-    # Количество сверточных слоев
+    # Number of convolution layers
     total_conv_layers_number = 0
-    # Кол-во maxp слоев с учетом того, что maxp в верилоге используется только для 4 картинок, т.е. 2-й maxp слой мат. модели в верилоге разбит на два maxp слоя.
+    # Number of maxpooling layers
     total_maxp_layers_number = 0
-    # Кол-во Dense слоёв
+    # Number of dense (FC) layers
     total_dense_layers_number = 0
 
     conv_inputs = []
@@ -1534,24 +1534,26 @@ if __name__ == '__main__':
             conv_inputs.append(layer.input_shape[1])
             conv_mem.append(layer.input_shape[3])
             conv_filt.append(layer.output_shape[3])
-            conv_block_size_1 = len(layer.get_weights()[0])
-            conv_block_size_2 = len(layer.get_weights()[0][0])
-            max_address_value += len(layer.get_weights()[0][0][0][0])*len(layer.get_weights()[0][0][0])*len(layer.get_weights()[0][0])*len(layer.get_weights()[0]*len(layer.get_weights()))
-            max_weights_per_layer_1 = int((len(layer.get_weights()[0][0][0][0])*len(layer.get_weights()[0][0][0])*len(layer.get_weights()[0][0])*len(layer.get_weights()[0]*len(layer.get_weights())))/(conv_block_size_1*conv_block_size_2))
-            if (max_weights_per_layer_1 > max_weights_per_layer):
+            w = layer.get_weights()
+            conv_block_size_1 = len(w[0])
+            conv_block_size_2 = len(w[0][0])
+            max_address_value += len(w[0][0][0][0])*len(w[0][0][0])*len(w[0][0])*len(w[0]*len(w))
+            max_weights_per_layer_1 = int((len(w[0][0][0][0])*len(w[0][0][0])*len(w[0][0])*len(w[0]*len(w)))/(conv_block_size_1*conv_block_size_2))
+            if max_weights_per_layer_1 > max_weights_per_layer:
                 max_weights_per_layer = max_weights_per_layer_1
         elif 'MaxPooling2D' in str(type(layer)):
             if not 'GlobalMaxPooling2D' in str(type(layer)):
                 total_maxp_layers_number += int(layer.input_shape[3]/4)
         elif 'Dense' in str(type(layer)):
+            w = layer.get_weights()
             total_dense_layers_number += 1
             dense_inputs.append(layer.input_shape[1])
             dense_outputs.append(layer.output_shape[1])
-            max_address_value += len(layer.get_weights()[0][0]) * len(layer.get_weights()[0] * len(layer.get_weights()))
-            max_weights_per_layer_1 = int(len(layer.get_weights()[0][0]) * len(layer.get_weights()[0] * len(layer.get_weights()))/(conv_block_size_1*conv_block_size_2))+1
-            if (max_weights_per_layer_1 > max_weights_per_layer):
-                max_weights_per_layer=max_weights_per_layer_1
-        if (i==len(model.layers)-1):
+            max_address_value += len(layer.get_weights()[0][0]) * len(w[0] * len(w))
+            max_weights_per_layer_1 = int(len(w[0][0]) * len(w[0] * len(w))/(conv_block_size_1*conv_block_size_2))+1
+            if max_weights_per_layer_1 > max_weights_per_layer:
+                max_weights_per_layer = max_weights_per_layer_1
+        if i == len(model.layers) - 1:
             output_neurons_count = layer.output_shape[1]
 
     max_input_image_size = max(conv_inputs)
