@@ -1,4 +1,5 @@
-// author: shvlad (email: shvladspb@gmail.com)
+// Based on verilog by shvlad for camera connection (email: shvladspb@gmail.com)
+// https://habrahabr.ru/post/283488/
 // synopsys translate_off
 `timescale 1 ns / 1 ns
 // synopsys translate_on
