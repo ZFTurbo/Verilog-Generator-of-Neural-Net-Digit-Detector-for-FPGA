@@ -34,6 +34,7 @@ To recreate the device you need 3 components:
 * You need to connect pins with same name
 * 'x' pins are not used
 * You can see our connection variant on photo below
+* Detailed guide [how to use project in Altera Quartus](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/README_QUARTUS.md).
 
 ![Connection photo](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Connection-photo.jpg "Connection photo")
 
