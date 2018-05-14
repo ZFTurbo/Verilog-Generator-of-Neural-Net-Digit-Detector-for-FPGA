@@ -1,7 +1,5 @@
-module conv(clk,Y1,prov,matrix,matrix2,i,w1, w2, w3, w4, w5, w6, w7, w8, w9,w11, w12, w13, w14, w15, w16, w17, w18, w19,conv_en,dense_en);
-
+module conv(clk, Y1, prov, matrix, matrix2, i, w1, w2, w3, w4, w5, w6, w7, w8, w9,w11, w12, w13, w14, w15, w16, w17, w18, w19, conv_en, dense_en);
 parameter SIZE=23;
-
 input clk;
 output reg signed [SIZE+SIZE-2:0] Y1;
 input [1:0] prov;
@@ -70,7 +68,7 @@ always @(posedge clk)
             end
 			end
     end
-		
+
 function signed [SIZE+SIZE-2:0] Y;
     input signed [SIZE-1:0] a, b;
     begin

@@ -2,8 +2,9 @@ module memorywork(clk,data,address,we_p,we_w,re_RAM,nextstep,dp,dw,addrp,addrw,s
 
 parameter num_conv=0;
 
-parameter picture_storage_limit=0;	
-parameter SIZE=0;
+parameter picture_size=0;
+parameter convolution_size=0;
+parameter SIZE_1=0;
 parameter SIZE_2=0;
 parameter SIZE_3=0;
 parameter SIZE_4=0;
@@ -16,32 +17,32 @@ parameter SIZE_address_pix=0;
 parameter SIZE_address_wei=0;
 
 inout clk;
-input signed [SIZE-1:0] data;
-output [14:0] address;
+input signed [SIZE_1-1:0] data;
+output [12:0] address;
 output reg we_p;
 output reg we_w;
 inout re_RAM;
 input nextstep;
-output reg signed [SIZE-1:0] dp;   //write data
+output reg signed [SIZE_1-1:0] dp;   //write data
 output reg signed [SIZE_9-1:0] dw;     //write weight
 output reg [SIZE_address_pix-1:0] addrp;
 output reg [SIZE_address_wei-1:0] addrw;
 output [4:0] step_out;
 input GO;
-input [8:0] in_dense;
+input [4:0] in_dense;
 		  
 reg [SIZE_address_pix-1:0] addr;
-wire [14:0] firstaddr,lastaddr;
+wire [12:0] firstaddr,lastaddr;
 reg sh;
 
 reg [4:0] step;
 reg [4:0] step_n;
-reg [3:0] weight_case;
+reg [4:0] weight_case;
 reg [SIZE_9-1:0] buff;
 reg [12:0] i;
 reg [12:0] i_d;
 reg [12:0] i1;
-addressRAM #(.picture_storage_limit(picture_storage_limit)) inst_1(.step(step_out),.re_RAM(re_RAM),.firstaddr(firstaddr),.lastaddr(lastaddr));  
+addressRAM #(.picture_size(picture_size), .convolution_size(convolution_size)) inst_1(.step(step_out),.re_RAM(re_RAM),.firstaddr(firstaddr),.lastaddr(lastaddr));
 initial sh=0;
 initial weight_case=0;
 initial i=0;
@@ -64,7 +65,8 @@ always @(posedge clk)
                         if (we_p) 
 									begin
 											addrp=addr;
-											dp={data};
+											dp=0;
+											dp[SIZE_1-1:0]=data;
 											we_p=0;
 									end
 									i=i+1;
@@ -86,7 +88,7 @@ always @(posedge clk)
 										we_w=0;
 										addrw=addr;
 										if (weight_case!=0) i=i+1; 
-										if (step_out==14) if (i_d==(in_dense*num_conv)) begin  dw=buff; we_w=1; weight_case=1; i_d=0; i1=i1+1; end
+										if (step_out==14) if (i_d==(in_dense)) begin  dw=buff; we_w=1; weight_case=1; i_d=0; i1=i1+1; end
 										case (weight_case)
 											0: ;
 											1: begin buff=0; buff[SIZE_9-1:SIZE_8]=data; end   
@@ -96,8 +98,8 @@ always @(posedge clk)
 											5: buff[SIZE_5-1:SIZE_4]=data;           
 											6: buff[SIZE_4-1:SIZE_3]=data;  
 											7: buff[SIZE_3-1:SIZE_2]=data;  
-											8: buff[SIZE_2-1:SIZE]=data;   
-											9: begin buff[SIZE-1:0]=data;  i1=i1+1; end
+											8: buff[SIZE_2-1:SIZE_1]=data;   
+											9: begin buff[SIZE_1-1:0]=data;  i1=i1+1; end
 											default: $display("Check weight_case");
 										endcase
 										if (weight_case!=0) i_d=i_d+1;

@@ -1,10 +1,10 @@
 module addressRAM(
 	input [4:0] step,
 	output reg re_RAM,
-	output reg [14:0] firstaddr, lastaddr
+	output reg [12:0] firstaddr, lastaddr
 );
-parameter picture_size = 28;
-parameter convolution_size = 9;
+parameter picture_size = 0;
+parameter convolution_size = 0;
 
 parameter picture_storage_limit = picture_size*picture_size;
 parameter convweight = picture_storage_limit + (1*4 + 4*4 + 4*8 + 8*8) * convolution_size;  // all convolution weights [784:1828]

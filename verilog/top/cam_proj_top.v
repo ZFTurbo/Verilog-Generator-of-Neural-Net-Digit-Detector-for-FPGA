@@ -352,8 +352,7 @@ TOP neiroset (
 	.we_database        (wrreq_gray),
 	.dp_database        (out_data_gray),
 	.address_p_database (j_gray*28+i_gray),
-	.STOP               (end_neiroset),
-	.rst_n              (rst_n)
+	.STOP               (end_neiroset)
 );
 
 
