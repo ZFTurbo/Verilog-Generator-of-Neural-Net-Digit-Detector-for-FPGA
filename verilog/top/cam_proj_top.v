@@ -21,7 +21,6 @@ module cam_proj_top
 	output wire sioc,
 	output wire siod,
 	//VGA
-	output wire hsync, 
 	output wire [4:0] r,  
 	output wire [5:0] g,
 	output wire [4:0] b, 	
@@ -51,43 +50,15 @@ wire fbClk;
 wire rst_n;
 wire clk25;
 wire clk100;
-wire clk120;
 wire clk24;
-wire clk143;
-wire clk2;
-wire clk12;
-wire [9:0] input_wrusedw; 
-wire wr_strobe;
-wire rd_strobe;
-wire write_strobe;
-wire read_strobe;
-wire wait_strobe;
-wire idle_strobe;
-wire wr_input_fifo;
-wire rd_input_fifo;
-wire wr_output_fifo;
-wire rd_output_fifo;
-wire valid_data;
+wire clk143; 
 wire [15:0] input_fifo_to_sdram;
-wire rd_ena;
-wire sd_ready;
-wire p_VSYNC_cam;
-wire conf_done;
 
 assign rst_n = rst;
-
 assign sdram_clk = clk143;
-wire read_finish;
-wire STOP_capt;
-wire visible_out;
-wire wrfull;
-wire rdempty;
-wire wrfull_TFT;
-wire rdempty_TFT;
-wire next_capt;
+
 wire locked;
 wire [11:0] output_rdusedw_TFT;
-wire vsync_TFT;
 wire start_image;
 wire [3:0] RESULT;
 reg GO_NEIROSET;
@@ -97,86 +68,21 @@ reg [3:0] RESULT_2;
 wire ctrl_busy;
 wire [23:0] wr_addr;
 wire wr_enable;
-reg rd_enable_tst;
-wire rd_enable;
 wire [15:0] rd_data;
 reg [23:0] rd_addr;
-wire rdempty_cam,wrfull_cam;
-wire kadr;
+wire rd_ready;
+reg ready;
 
-///////////////////////////////////////
-
-reg [28:0] perem;
-reg [28:0] perem_rd;
-reg [28:0] perem_wait;
-reg [28:0] perem_idle;
-reg [28:0] perem_wrfull_TFT;
-reg [28:0] perem_rdempty_TFT;
-reg [27:0] sh;
-reg y_wr;
-reg y_rd;
-reg y_wait;
-reg y_idle;
-reg y_wrfull_TFT;
-reg y_rdempty_TFT;
-
-always @(posedge clk143 or negedge rst_n) 
-begin
-	if ( !rst_n )
-	begin
-		sh = 28'b0;
-		perem = 29'b0;
-		perem_rd = 29'b0;
-		perem_wait = 29'b0;
-		perem_idle = 29'b0;
-		perem_wrfull_TFT = 29'b0;
-		perem_rdempty_TFT = 29'b0;
-		y_wr = 1'b0;
-		y_rd = 1'b0;
-		y_wait = 1'b0;
-		y_idle = 1'b0;
-		y_wrfull_TFT = 1'b0;
-		y_rdempty_TFT = 1'b0;
-	end
-	else
-	begin
-		sh = sh + 1'b1;
-		//if (write_strobe) perem = perem+1'b1;
-		//if (read_strobe) perem_rd = perem_rd+1'b1;
-		if (wrfull_cam) perem_wait = perem_wait + 1'b1;
-		if (rdempty_cam) perem_idle = perem_idle + 1'b1;
-		if (wrfull_TFT) perem_wrfull_TFT = perem_wrfull_TFT + 1'b1; //28
-		if (rdempty_TFT) perem_rdempty_TFT = perem_rdempty_TFT + 1'b1;	//28
-		if (sh == 28'hFFFFFFF)
-		begin
-			sh = 28'h0;
-			if (perem != 29'b0) y_wr = 1'b1; else y_wr = 1'b0;
-			if (perem_rd != 29'b0) y_rd = 1'b1; else y_rd = 1'b0;
-			if (perem_wait != 29'b0) y_wait = 1'b1; else y_wait = 1'b0;
-			if (perem_idle != 29'b0) y_idle = 1'b1; else y_idle = 1'b0;
-			if (perem_wrfull_TFT != 29'b0) y_wrfull_TFT = 1'b1; else y_wrfull_TFT = 1'b0;
-			if (perem_rdempty_TFT != 29'b0) y_rdempty_TFT = 1'b1; else y_rdempty_TFT = 1'b0;
-			perem = 29'b0;
-			perem_rd = 29'b0;
-			perem_wait = 29'b0;
-			perem_idle = 29'b0;
-			perem_wrfull_TFT = 29'b0;
-			perem_rdempty_TFT = 29'b0;
-		end
-	end
-end
-
-///////////////////////////////////////
 
 //LED
 assign LED[0] = wr_enable;
-assign LED[1] = rd_enable;
-assign LED[2] = y_wrfull_TFT;
-assign LED[3] = y_rdempty_TFT;
-assign LED[4] = y_wait;
-assign LED[5] = y_idle;
-assign LED[6] = end_gray;
-assign LED[7] = end_neiroset;
+assign LED[1] = !wr_enable;
+assign LED[2] = 1'b0;
+assign LED[3] = 1'b0;
+assign LED[4] = 1'b0;
+assign LED[5] = 1'b0;
+assign LED[6] = 1'b0;
+assign LED[7] = 1'b0;
 
 
 // Clocks
@@ -186,7 +92,6 @@ pll pll_for_sdram_0
 	.areset   ( !rst_n ),
 	.inclk0   ( clk50 ),
 	.c0       ( clk100 ),
-	.c1       ( clk120 ),
 	.c2       ( clk25 ),
 	.c3       ( clk24 ),
 	.locked   ( locked )
@@ -196,9 +101,7 @@ pll_for_disp pll2
 (
 	.areset   ( !rst_n ),
 	.inclk0   ( clk50 ),
-	.c0       ( clk143 ),
-	.c1       ( clk2 ),
-	.c2       ( clk12 )
+	.c0       ( clk143 )
 
 );
 
@@ -208,19 +111,12 @@ cam_wrp cam_wrp_0
 (
 	.rst_n                ( rst_n ),
 	.data_cam             ( data_cam ),
-	.VSYNC_cam            ( VSYNC_cam ),
 	.HREF_cam             ( HREF_cam ),
 	.PCLK_cam             ( PCLK_cam ),
-	.clk_sdram            ( clk143 ),
-	.output_rdusedw       ( input_wrusedw ),
 	.ctrl_busy            ( ctrl_busy ),
 	.input_fifo_to_sdram  ( input_fifo_to_sdram ),
 	.addr_sdram           ( wr_addr ),
-	.wr_enable            ( wr_enable ),
-	.rdempty_cam          ( rdempty_cam ),
-	.wrfull_cam           ( wrfull_cam ),
-	.flag_read            ( rd_enable ),
-	.kadr                 ( kadr )
+	.wr_enable            ( wr_enable )
 );
 
 assign XCLK_cam = clk24;
@@ -235,66 +131,46 @@ hellosoc_top TFT(
 	.tft_reset          ( tft_reset ), 
 	.tft_cs             ( tft_cs ),
 	.rst_n              ( rst_n ),
-	.clk_sdram          ( clk143 ),
-	.wr_fifo            ( rd_enable_tst && ready ),
+	.clk_sdram          ( !rd_ready ),
+	.wr_fifo            ( (!wr_enable) && ready ),
 	.sdram_data         ( rd_data ),
 	.tft_clk            ( clk100 ),
-	.p_VSYNC_cam        ( p_VSYNC_cam ),
-	.wrfull             ( wrfull_TFT ),
-	.rdempty            ( rdempty_TFT ),
-	.next_capt          ( next_capt ),
 	.output_rdusedw     ( output_rdusedw_TFT ),
-	.vsync              ( vsync_TFT ),
 	.fbClk              ( fbClk ),
 	.r                  ( r ),
 	.g                  ( g ),
 	.b                  ( b ),
-	.start_to_GPIO      ( start_TFT ),
-	.flag_read          ( flag_read ),
 	.start_28           ( start_image ),
-	.end_neiroset       ( end_neiroset ),
 	.RESULT             ( RESULT_2 )
 );
 
+reg [9:0] x_sdram;
 
-reg ready;
-reg my_wr_enable;
-reg [23:0] my_addr;
-reg [3:0] wtf2;
-	
-
-always @(posedge clk143 or negedge rst_n)
+always @(posedge rd_ready or negedge rst_n)
 begin
 	if (!rst_n)
 	begin
-		rd_addr = 320*160;
-		wtf2 = 4'b0;
-		ready = 1'b0;
+		rd_addr = 320*201+3;
+		ready=1'b1;
+		x_sdram=0;
 	end
 	else
 	begin
-		if ((!ctrl_busy) && (!wr_enable) && (ready))
-		begin
-			if (rd_addr < 24'd76799)	
+		if ((!wr_enable)&&(ready))
+				begin
+					if (rd_addr < 24'd76799) rd_addr = rd_addr + 1'b1;
+					else rd_addr=24'd0;
+					if (x_sdram<320) x_sdram=x_sdram+1'b1;
+					else x_sdram=1;
+				end
+		if (x_sdram==320)
 			begin
-				wtf2 = wtf2+1'b1;
-				if (wtf2 != 4'b1111) 
-				begin
-					rd_enable_tst = 1'b0;
-				end
-				else
-				begin
-					rd_addr = rd_addr + 1'b1;
-					rd_enable_tst = 1'b1;
-				end
+				if ((!wr_enable)&&(output_rdusedw_TFT<=3000)) begin ready=1'b1;  end
+				else begin  ready=1'b0;  end
 			end
-			else rd_addr=24'd0;
-		end
-		if (output_rdusedw_TFT <= 3000) ready = 1'b1;
-		else                            ready = 1'b0;
 	end
 end
-	
+
 	
 sdram_controller SDRAM(
 	.wr_addr       (wr_addr),
@@ -303,7 +179,7 @@ sdram_controller SDRAM(
 	.rd_addr       (rd_addr),
 	.rd_data       (rd_data),
 	.rd_ready      (rd_ready),
-	.rd_enable     (rd_enable_tst && (ready)/*fbClk && (!my_wr_enable)*/),
+	.rd_enable     (!wr_enable),
 	.busy          (ctrl_busy), 
 	.rst_n         (rst_n), 
 	.clk           (clk143),
@@ -326,8 +202,6 @@ wire end_gray;
 reg [9:0] x_gray, y_gray;
 wire [4:0] i_gray, j_gray;
 wire [12:0] out_data_gray;
-wire start_gray_load_GPIO;
-wire start_TFT;
 wire wrreq_gray;
 
 pre_v2 grayscale(
@@ -363,7 +237,6 @@ begin
 		x_gray = 10'd0;
 		y_gray = 10'd0;
 		start_gray = 1'b0;
-		//GO_NEIROSET = 1'b1;
 	end
 	else
 	begin
@@ -381,9 +254,7 @@ begin
 				else x_gray <= x_gray+1'b1;
 			end
 			
-		//if (end_gray) begin	/*start_gray=1'b0; if (end_neiroset==1'b1) */GO_NEIROSET=1'b0; end
-		//else begin GO_NEIROSET=1'b1; end
-		if (/*(start_gray_load_GPIO)&&*/(GO_NEIROSET == 1'b1) && (x_gray == 10'd47) && (y_gray == 10'd239)/*&&(end_neiroset==1'b1)*/) start_gray = 1'b1;
+		if ((GO_NEIROSET == 1'b1) && (x_gray == 10'd47) && (y_gray == 10'd239)) start_gray = 1'b1;
 		if (end_gray) start_gray = 1'b0;
 	end
 end	
@@ -403,8 +274,6 @@ begin
 	end
 end
 
-
-assign start_gray_load_GPIO = !start_gray_kn;
 
 
 // start camera inititalization
@@ -435,7 +304,7 @@ camera_configure_0
 	.start ( ( strt == 3'h6 ) ),
 	.sioc  ( sioc             ),
 	.siod  ( siod             ),
-	.done  ( conf_done        )
+	.done  ( 			        )
 );
 
 // reset camera with overall reset from button
