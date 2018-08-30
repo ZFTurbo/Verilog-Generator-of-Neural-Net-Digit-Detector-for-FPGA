@@ -50,3 +50,8 @@ blocks which will work in parallel. More blocks will require more LE in FPGA, bu
 * Comparison table for different bit weights and number of convolution blocks below (red rows: unable to synthesize, due to Cyclone IV limitations).
    
 ![Used FPGA resources](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Info-Table.png "Used FPGA resources")
+
+## Method description
+
+You can find more detailed description here:
+* [https://arxiv.org/abs/1808.09945](https://arxiv.org/abs/1808.09945)
