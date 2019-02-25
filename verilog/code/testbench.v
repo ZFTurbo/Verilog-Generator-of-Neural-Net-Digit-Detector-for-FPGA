@@ -39,16 +39,9 @@ always @(posedge clk)
 						dp_database = storage[address_p_database];
 						address_p_database=address_p_database+1'b1;
 				end
-			else 
-				begin
-					//GO=1;
-					we_database=0;
-				end
+			else we_database=0;
 		end
-		if ((x<=28*28)&&(GO))
-			begin
-				x=x+1;
-			end
+		if ((x<=28*28)&&(GO)) x=x+1;
 		else GO=0;
 	if (STOP==1)
 	begin
@@ -56,10 +49,6 @@ always @(posedge clk)
 		$finish;
 	end
  end
- initial
-	begin
-		#33800 $finish();
-	end
  
 initial
 	begin
