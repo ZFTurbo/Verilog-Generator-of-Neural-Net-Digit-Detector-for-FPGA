@@ -19,7 +19,7 @@ parameter SIZE=12;
 	.RESULT					(RESULT),
 	.we_database			(we_database), 
 	.dp_database			(dp_database), 
-	.address_p_database		(address_p_database-1), 
+	.address_p_database		(address_p_database-1'b1),
 	.STOP					(STOP)
   );
 initial begin
