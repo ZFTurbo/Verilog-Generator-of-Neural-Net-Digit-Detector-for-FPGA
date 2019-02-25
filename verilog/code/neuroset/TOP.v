@@ -1,24 +1,24 @@
-module TOP(clk,GO,RESULT,we_database,dp_database,address_p_database,STOP);
+module TOP(clk, GO, RESULT, we_database, dp_database, address_p_database, STOP);
 
-parameter num_conv=1;
-parameter SIZE_1=12;
-parameter SIZE_2=SIZE_1*2;
-parameter SIZE_3=SIZE_1*3;
-parameter SIZE_4=SIZE_1*4;
-parameter SIZE_5=SIZE_1*5;
-parameter SIZE_6=SIZE_1*6;
-parameter SIZE_7=SIZE_1*7;
-parameter SIZE_8=SIZE_1*8;
-parameter SIZE_9=SIZE_1*9;
-parameter SIZE_address_pix=13;
-parameter SIZE_address_pix_t=12;
-parameter SIZE_address_wei=9;
+parameter num_conv = 1;
+parameter SIZE_1 = 12;
+parameter SIZE_2 = SIZE_1*2;
+parameter SIZE_3 = SIZE_1*3;
+parameter SIZE_4 = SIZE_1*4;
+parameter SIZE_5 = SIZE_1*5;
+parameter SIZE_6 = SIZE_1*6;
+parameter SIZE_7 = SIZE_1*7;
+parameter SIZE_8 = SIZE_1*8;
+parameter SIZE_9 = SIZE_1*9;
+parameter SIZE_address_pix = 13;
+parameter SIZE_address_pix_t = 12;
+parameter SIZE_address_wei = 9;
 parameter picture_size = 28;
 parameter picture_storage_limit = 0;
 parameter razmpar = picture_size >> 1;
 parameter razmpar2  = picture_size >> 2;
-parameter picture_storage_limit_2 = ((picture_size*picture_size)*4)>>(num_conv>>1);
-parameter convolution_size=9;
+parameter picture_storage_limit_2 = ((picture_size*picture_size)*4) >> (num_conv >> 1);
+parameter convolution_size = 9;
 input clk;
 input GO;
 output [3:0] RESULT;
@@ -133,133 +133,140 @@ result #(SIZE_1,SIZE_2,SIZE_3,SIZE_4,SIZE_address_pix) result(clk,result_en,STOP
 conv #(SIZE_1) conv1 (clk,Y1,prov,matrix,matrix2,i_conv,p11,p12,p13,p14,p15,p16,p17,p18,p19,w11,w12,w13,w14,w15,w16,w17,w18,w19,go_conv,dense_en);
 
 
-initial lvl=0;
-initial slvl=0;
-initial num=0;
-initial num_maxp=0;
+initial lvl = 0;
+initial slvl = 0;
+initial num = 0;
+initial num_maxp = 0;
 initial memstartw = 0;
 
 always @(posedge clk )
 begin
-if (GO==1)
-begin
-STOP=0;
-nextstep=1;
-num_maxp=0;
-globmaxp_en=0;
-TOPlvl_maxp=0;
-matrix=picture_size;
-dense_en=0;
-end
-else nextstep=0;
-if (STOP==0)
-begin
-	if ((TOPlvl==1)&&(step==3))
-		begin
-			memstartp=picture_storage_limit;
-			memstartzap=picture_storage_limit_2;
-			conv_en=1;
-			mem=3;
-			filt=0;
-			matrix=28;
+    if (GO==1)
+    begin
+        STOP=0;
+        nextstep=1;
+        num_maxp=0;
+        globmaxp_en=0;
+        TOPlvl_maxp=0;
+        matrix=picture_size;
+        dense_en=0;
+    end
+    else nextstep=0;
+
+    if (STOP==0)
+    begin
+	    if ((TOPlvl==1)&&(step==3))
+		    begin
+			    memstartp = picture_storage_limit;
+			    memstartzap = picture_storage_limit_2;
+			    conv_en = 1;
+			    mem = 3;
+			    filt = 0;
+			    matrix = 28;
 			globmaxp_en=0;
 		end	
 	if ((TOPlvl==2)&&(step==3)) nextstep=1;
-	if ((TOPlvl==2)&&(step==5))
-		begin
-			memstartp=picture_storage_limit_2;
-			memstartzap=picture_storage_limit;
-			conv_en=1;
-			mem=3;
-			filt=3;
-			matrix=28;
+	    if ((TOPlvl==2)&&(step==5))
+		    begin
+			    memstartp = picture_storage_limit_2;
+			    memstartzap = picture_storage_limit;
+			    conv_en = 1;
+			    mem = 3;
+			    filt = 3;
+			    matrix = 28;
 			globmaxp_en=0;
 		end	
-	if ((TOPlvl==3)&&(STOP_maxp==0))
-		begin
-			memstartp=picture_storage_limit+0*matrix2*((4>>(num_conv>>1)));
-			memstartzap=picture_storage_limit_2+0*(matrix2>>(num_conv>>1));
-			maxp_en=1;
-		end
+	    if ((TOPlvl==3)&&(STOP_maxp==0))
+		    begin
+			    memstartp = picture_storage_limit+0*matrix2*((4 >> (num_conv >> 1)));
+			    memstartzap=picture_storage_limit_2+0*(matrix2 >> (num_conv >> 1));
+			    maxp_en=1;
+		    end
 	if ((TOPlvl==4)&&(step==5)) nextstep=1;
-	if ((TOPlvl==4)&&(step==7))
-		begin
-			memstartp=picture_storage_limit_2;
-			memstartzap=picture_storage_limit;
-			conv_en=1;
-			mem=7;
-			filt=3;
-			matrix=14;
+	    if ((TOPlvl==4)&&(step==7))
+		    begin
+			    memstartp = picture_storage_limit_2;
+			    memstartzap = picture_storage_limit;
+			    conv_en = 1;
+			    mem = 7;
+			    filt = 3;
+			    matrix = 14;
 			globmaxp_en=0;
 		end	
 	if ((TOPlvl==5)&&(step==7)) nextstep=1;
-	if ((TOPlvl==5)&&(step==9))
-		begin
-			memstartp=picture_storage_limit;
-			memstartzap=picture_storage_limit_2;
-			conv_en=1;
-			mem=7;
-			filt=7;
-			matrix=14;
+	    if ((TOPlvl==5)&&(step==9))
+		    begin
+			    memstartp = picture_storage_limit;
+			    memstartzap = picture_storage_limit_2;
+			    conv_en = 1;
+			    mem = 7;
+			    filt = 7;
+			    matrix = 14;
 			globmaxp_en=0;
 		end	
-	if ((TOPlvl==6)&&(STOP_maxp==0))
-		begin
-			memstartp=picture_storage_limit_2+0*matrix2*((4>>(num_conv>>1)));
-			memstartzap=picture_storage_limit+0*(matrix2>>(num_conv>>1));
-			maxp_en=1;
-		end
-	if ((TOPlvl==7)&&(STOP_maxp==0))
-		begin
-			memstartp=picture_storage_limit_2+1*matrix2*((4>>(num_conv>>1)));
-			memstartzap=picture_storage_limit+1*(matrix2>>(num_conv>>1));
-			maxp_en=1;
-		end
+	    if ((TOPlvl==6)&&(STOP_maxp==0))
+		    begin
+			    memstartp = picture_storage_limit_2+0*matrix2*((4 >> (num_conv >> 1)));
+			    memstartzap=picture_storage_limit+0*(matrix2 >> (num_conv >> 1));
+			    maxp_en=1;
+		    end
+	    if ((TOPlvl==7)&&(STOP_maxp==0))
+		    begin
+			    memstartp = picture_storage_limit_2+1*matrix2*((4 >> (num_conv >> 1)));
+			    memstartzap=picture_storage_limit+1*(matrix2 >> (num_conv >> 1));
+			    maxp_en=1;
+		    end
 	if ((TOPlvl==8)&&(step==9)) nextstep=1;
-	if ((TOPlvl==8)&&(step==11))
-		begin
-			memstartp=picture_storage_limit;
-			memstartzap=picture_storage_limit_2;
-			conv_en=1;
-			mem=15;
-			filt=7;
-			matrix=7;
+	    if ((TOPlvl==8)&&(step==11))
+		    begin
+			    memstartp = picture_storage_limit;
+			    memstartzap = picture_storage_limit_2;
+			    conv_en = 1;
+			    mem = 15;
+			    filt = 7;
+			    matrix = 7;
 			globmaxp_en=0;
 		end	
 	if ((TOPlvl==9)&&(step==11)) nextstep=1;
-	if ((TOPlvl==9)&&(step==13))
-		begin
-			memstartp=picture_storage_limit_2;
-			memstartzap=picture_storage_limit;
-			conv_en=1;
-			mem=15;
-			filt=15;
-			matrix=7;
+	    if ((TOPlvl==9)&&(step==13))
+		    begin
+			    memstartp = picture_storage_limit_2;
+			    memstartzap = picture_storage_limit;
+			    conv_en = 1;
+			    mem = 15;
+			    filt = 15;
+			    matrix = 7;
 			globmaxp_en=1;
 		end	
-	if ((TOPlvl==10)&&(step==13)) begin globmaxp_en=0; nextstep=1; in_dense=16; out_dense=11; end   
-	if ((TOPlvl==10)&&(STOP_dense==0)&&(step==15))
-		begin
-			memstartp=picture_storage_limit;
-			memstartzap=picture_storage_limit_2;
-			dense_en=1;
-			nozero_dense=1;
-		end
-	if ((TOPlvl==10)&&(STOP_dense==0)&&(step==16))
-		begin
-			memstartp=picture_storage_limit_2;
-			result_en=1;
-		end
-	if (lvl==filt) bias=1; else bias=0;
-	if ((STOP_conv)&&(conv_en==1)) conv_en=0;
-	if ((STOP_maxp==1)&&(maxp_en==1)) begin maxp_en=0; if (num_maxp!=4-num_conv) num_maxp=num_maxp+1; else begin num_maxp=0; TOPlvl_maxp=TOPlvl_maxp+1; end  end
-	if (STOP_dense==1) begin dense_en=0; nextstep=1; end
-	if ((STOP_res==1)&&(result_en==1))
-	begin
-		result_en=0;
-		STOP=1;
-	end
-end
+	    if ((TOPlvl==10)&&(step==13)) 
+            begin 
+                globmaxp_en = 0; 
+                nextstep = 1; 
+                in_dense = 16; 
+                out_dense = 11; 
+            end   
+	    if ((TOPlvl==10)&&(STOP_dense==0)&&(step==15))
+		    begin
+			    memstartp = picture_storage_limit;
+			    memstartzap = picture_storage_limit_2;
+			    dense_en = 1;
+    			nozero_dense = 1;
+	    	end
+	    if ((TOPlvl==10)&&(STOP_dense==0)&&(step==16))
+		    begin
+			    memstartp = picture_storage_limit_2;
+		    	result_en = 1;
+		    end
+	    if (lvl==filt) bias=1; else bias=0;
+	    if ((STOP_conv)&&(conv_en==1)) conv_en=0;
+	    if ((STOP_maxp==1)&&(maxp_en==1)) begin maxp_en=0; if (num_maxp!=4-num_conv) num_maxp=num_maxp+1; else begin num_maxp=0; TOPlvl_maxp=TOPlvl_maxp+1; end  end
+	    if (STOP_dense==1) begin dense_en=0; nextstep=1; end
+	    if ((STOP_res==1)&&(result_en==1))
+	    begin
+	    	result_en = 0;
+	    	STOP = 1;
+    	end
+    end
 end
 
 always @(negedge STOP_conv or posedge GO)
