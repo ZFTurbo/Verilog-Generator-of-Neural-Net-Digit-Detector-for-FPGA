@@ -1,7 +1,7 @@
 module TOP(clk, GO, RESULT, we_database, dp_database, address_p_database, STOP);
 
 parameter num_conv = 1;
-parameter SIZE_1 = 12;
+parameter SIZE_1 = 11;
 parameter SIZE_2 = SIZE_1*2;
 parameter SIZE_3 = SIZE_1*3;
 parameter SIZE_4 = SIZE_1*4;
