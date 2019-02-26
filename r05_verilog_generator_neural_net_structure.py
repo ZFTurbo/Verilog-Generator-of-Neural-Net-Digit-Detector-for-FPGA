@@ -1512,7 +1512,7 @@ if __name__ == '__main__':
     # Where to store neural net verilog
     output_directory = "./verilog/code/neuroset/"
     # Bit size of weights (including sign)
-    bit_size = get_optimal_bit_for_weights() + 2
+    bit_size = get_optimal_bit_for_weights() + 1
     # Number of convolution blocks (1, 2 or 4). Higher faster, but requires more logic cells.
     num_conv = 1
 
