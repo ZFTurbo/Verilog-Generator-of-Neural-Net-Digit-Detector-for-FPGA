@@ -36,6 +36,8 @@ To recreate the device you need 3 components:
 * You can see our connection variant on photo below
 * Detailed guide [how to use project in Altera Quartus](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/README_QUARTUS.md).
 
+![De0-Nano connection](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Connect-Detailed.jpg "De0-Nano connection")
+
 ![Connection photo](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Connection-photo.jpg "Connection photo")
 
 ## Demo video with detection
