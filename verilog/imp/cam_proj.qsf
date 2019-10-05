@@ -184,7 +184,7 @@ set_global_assignment -name VERILOG_FILE ../code/neuroset/TOP.v
 set_global_assignment -name VERILOG_FILE ../code/neuroset/result.v
 set_global_assignment -name VERILOG_FILE ../code/neuroset/RAMtoMEM.v
 set_global_assignment -name VERILOG_FILE ../code/neuroset/RAM.v
-set_global_assignment -name VERILOG_FILE ../code/neuroset/MaxPooling.v
+set_global_assignment -name VERILOG_FILE ../code/neuroset/maxpooling.v
 set_global_assignment -name VERILOG_FILE ../code/neuroset/dense.v
 set_global_assignment -name VERILOG_FILE ../code/neuroset/database.v
 set_global_assignment -name VERILOG_FILE ../code/neuroset/conv_TOP.v
