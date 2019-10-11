@@ -53,6 +53,12 @@ blocks which will work in parallel. More blocks will require more LE in FPGA, bu
    
 ![Used FPGA resources](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Info-Table.png "Used FPGA resources")
 
+## Related project
+
+The similar project but with more complicated and widely used neural net: MobileNet (v1). It uses some other set of devices. It has similar code structure. It has fast speed (>40 FPS) and much better accuracy comparing to this project. It suitable for most image classification tasks in real time.
+
+* [MobileNet in FPGA](https://github.com/ZFTurbo/MobileNet-in-FPGA)
+
 ## Method description
 
 You can find more detailed description here:
