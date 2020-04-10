@@ -108,10 +108,12 @@ def get_image_set(path):
 
 
 if __name__ == '__main__':
-    use_image = 0
+    use_image = 20
     bp = 11
     ROOT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/'
     images, answers = get_image_set(ROOT_PATH)
     print('Total images read: {}. Image number for testbench: {}'.format(len(images), use_image))
     print('Bit precision: {} (with sign: {})'.format(bp, bp+1))
-    generate_test_image_memory_verilog(images[use_image], answers[use_image], bp+1, ROOT_PATH + "verilog/initial_image_bitdepth_{}_number_{}.v".format(bp+1, use_image), 'bin')
+    out_path = ROOT_PATH + "verilog/initial_image_bitdepth_{}_img_number_{}_answ_{}.v".format(bp+1, use_image, answers[use_image])
+    generate_test_image_memory_verilog(images[use_image], answers[use_image], bp+1, out_path, 'bin')
+    print('Verilog generated in {}'.format(out_path))
