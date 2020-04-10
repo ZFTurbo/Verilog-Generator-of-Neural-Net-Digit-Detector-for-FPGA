@@ -36,6 +36,8 @@ To recreate the device you need 3 components:
 * You can see our connection variant on photo below
 * Detailed guide [how to use project in Altera Quartus](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/README_QUARTUS.md).
 
+![De0-Nano connection](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Connect-Detailed.jpg "De0-Nano connection")
+
 ![Connection photo](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Connection-photo.jpg "Connection photo")
 
 ## Demo video with detection
@@ -50,6 +52,12 @@ blocks which will work in parallel. More blocks will require more LE in FPGA, bu
 * Comparison table for different bit weights and number of convolution blocks below (red rows: unable to synthesize, due to Cyclone IV limitations).
    
 ![Used FPGA resources](https://github.com/ZFTurbo/Verilog-Generator-of-Neural-Net-Digit-Detector-for-FPGA/blob/master/images/Info-Table.png "Used FPGA resources")
+
+## Related project
+
+The similar project but with more complicated and widely used neural net: MobileNet (v1). It uses some other set of devices. It has similar code structure. It has fast speed (>40 FPS) and much better accuracy comparing to this project. It suitable for most image classification tasks in real time.
+
+* [MobileNet in FPGA](https://github.com/ZFTurbo/MobileNet-in-FPGA)
 
 ## Method description
 
