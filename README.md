@@ -59,7 +59,16 @@ The similar project but with more complicated and widely used neural net: Mobile
 
 * [MobileNet in FPGA](https://github.com/ZFTurbo/MobileNet-in-FPGA)
 
-## Method description
+## Citation
 
-You can find more detailed description here:
-* [https://arxiv.org/abs/1808.09945](https://arxiv.org/abs/1808.09945)
+You can find detailed description of the method in our [paper](https://doi.org/10.1109/EIConRus.2019.8656778). If you find this work useful, please consider citing:
+
+      @inproceedings{solovyev2019fixed,
+        title={Fixed-point convolutional neural network for real-time video processing in FPGA},
+        author={Solovyev, Roman and Kustov, Alexander and Telpukhov, Dmitry and Rukhlov, Vladimir and Kalinin, Alexandr},
+        booktitle={2019 IEEE Conference of Russian Young Researchers in Electrical and Electronic Engineering (EIConRus)},
+        pages={1605--1611},
+        year={2019},
+        organization={IEEE}
+      }
+   
