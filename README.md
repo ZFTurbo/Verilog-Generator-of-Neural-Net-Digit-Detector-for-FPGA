@@ -61,7 +61,7 @@ The similar project but with more complicated and widely used neural net: Mobile
 
 ## Citation
 
-You can find detailed description of the method in our [paper](https://doi.org/10.1109/EIConRus.2019.8656778). If you find this work useful, please consider citing:
+You can find detailed description of the method in our [paper](https://doi.org/10.1109/EIConRus.2019.8656778) (or [unpaywalled preprint](https://arxiv.org/abs/1808.09945)). If you find this work useful, please consider citing:
 
       @inproceedings{solovyev2019fixed,
         title={Fixed-point convolutional neural network for real-time video processing in FPGA},
