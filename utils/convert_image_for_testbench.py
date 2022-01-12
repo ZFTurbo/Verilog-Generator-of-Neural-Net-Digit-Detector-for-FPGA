@@ -108,8 +108,8 @@ def get_image_set(path):
 
 
 if __name__ == '__main__':
-    use_image = 20
-    bp = 11
+    use_image = 0
+    bp = 10
     ROOT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/'
     images, answers = get_image_set(ROOT_PATH)
     print('Total images read: {}. Image number for testbench: {}'.format(len(images), use_image))
