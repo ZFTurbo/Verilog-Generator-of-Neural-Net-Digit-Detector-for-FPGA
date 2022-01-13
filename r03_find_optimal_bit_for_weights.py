@@ -10,7 +10,7 @@ For our LWDD net optimum is on 10 bits.
 
 import os
 
-gpu_use = 4
+gpu_use = 0
 os.environ["KERAS_BACKEND"] = "tensorflow"
 os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(gpu_use)
 
