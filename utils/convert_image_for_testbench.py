@@ -6,6 +6,7 @@ import numpy as np
 import glob
 import math
 import cv2
+import argparse
 
 
 def convert_to_binary(float_val, precision, only_dot=0):
@@ -107,11 +108,28 @@ def get_image_set(path):
     return image_list, expected_answ
 
 
+def parse_opt():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--use_image', type=int, default=0, help='Number of image from test set')
+    parser.add_argument('--bp', type=int, default=10, help='Bit precision')
+    opt = parser.parse_args()
+    return opt
+
+
 if __name__ == '__main__':
-    use_image = 0
-    bp = 10
+    args = parse_opt()
     ROOT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/'
     images, answers = get_image_set(ROOT_PATH)
+    use_image = args.use_image
+    if use_image < 0:
+        use_image = 0
+    if use_image >= len(answers):
+        use_image = len(answers) - 1
+    bp = args.bp
+    if bp < 4:
+        bp = 4
+    if bp > 32:
+        bp = 32
     print('Total images read: {}. Image number for testbench: {}'.format(len(images), use_image))
     print('Bit precision: {} (with sign: {})'.format(bp, bp+1))
     out_path = ROOT_PATH + "verilog/initial_image_bitdepth_{}_img_number_{}_answ_{}.v".format(bp+1, use_image, answers[use_image])
