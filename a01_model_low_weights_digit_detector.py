@@ -3,9 +3,14 @@ __author__ = 'Roman Solovyev (ZFTurbo), IPPM RAS'
 
 
 def keras_model_low_weights_digit_detector():
-    from keras.models import Model
-    from keras.layers import Input, Dense, GlobalAveragePooling2D, GlobalMaxPooling2D
-    from keras.layers import Conv2D, MaxPooling2D, Activation
+    try:
+        from keras.models import Model
+        from keras.layers import Input, Dense, GlobalAveragePooling2D, GlobalMaxPooling2D
+        from keras.layers import Conv2D, MaxPooling2D, Activation
+    except:
+        from tensorflow.keras.models import Model
+        from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, GlobalMaxPooling2D
+        from tensorflow.keras.layers import Conv2D, MaxPooling2D, Activation
 
     use_bias = False
 

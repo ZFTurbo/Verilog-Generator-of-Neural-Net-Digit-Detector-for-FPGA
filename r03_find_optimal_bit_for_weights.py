@@ -10,7 +10,7 @@ For our LWDD net optimum is on 10 bits.
 
 import os
 
-gpu_use = 0
+gpu_use = 4
 os.environ["KERAS_BACKEND"] = "tensorflow"
 os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(gpu_use)
 
@@ -19,7 +19,8 @@ import numpy as np
 from a00_common_functions import *
 from a01_model_low_weights_digit_detector import keras_model_low_weights_digit_detector
 import math
-
+import argparse
+import sys
 
 # Note: We suppose that every Conv2D layer has type "same"
 # In Tensorflow weight matrices already transposed
@@ -151,14 +152,14 @@ def print_first_pixel_detailed_calculation(previous_layer_output, wgt_bit, bit_p
 
 
 # bit_precizion - Точность фиксированной точки в битах
-def go_mat_model(model, image, reduction_koeffs, bit_precizion=18, debug_info=True):
+def go_mat_model(model, image, reduction_koeffs, bit_precizion=18, args=None, debug_info=True):
 
     weights = dict()
     level_out = dict()
     level_out_reduced = dict()
     level_id = 0
-    dump_memory_struct = False
-    print_pixel_calc = False
+    dump_memory_struct = args.dump_memory_struct
+    print_pixel_calc = args.print_pixel_calc
 
     for i in range(len(model.layers)):
         layer = model.layers[i]
@@ -394,9 +395,9 @@ def get_image_set():
 
 
 # This function works slow, so it should be run once to find optimal bit
-def get_optimal_bit_for_weights():
+def get_optimal_bit_for_weights(args):
     print('Read model...')
-    use_cache = 1
+    use_cache = args.use_cache
     cache_path = 'weights/optimal_bit.pklz'
     if not os.path.isfile(cache_path) or use_cache == 0:
         model = keras_model_low_weights_digit_detector()
@@ -412,11 +413,11 @@ def get_optimal_bit_for_weights():
             res_keras_array.append(np.argmax(keras_out[i]))
         print('Keras result: ', res_keras_array)
 
-        for bp in range(8, 32):
+        for bp in range(args.start_bit, args.end_bit):
             print('Start error precision: {}'.format(bp))
             res_model_array = []
             for i in range(len(images)):
-                model_out, raw_output_v1, raw_output, raw_output_2 = go_mat_model(model, images[i], 0, bp, debug_info=False)
+                model_out, raw_output_v1, raw_output, raw_output_2 = go_mat_model(model, images[i], 0, bp, args, debug_info=False)
                 res_model_array.append(model_out)
                 print("Image number: {} Result: {} vs {}".format(i, res_keras_array[i], res_model_array[i]))
                 if res_keras_array[i] != res_model_array[i]:
@@ -433,8 +434,20 @@ def get_optimal_bit_for_weights():
         return load_from_file(cache_path)
 
 
+def parse_opt():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dump_memory_struct', action='store_true', help='Dump binary values for each feature map in the neural net (useful for debugging)')
+    parser.add_argument('--print_pixel_calc', action='store_true', help='Print deatails on how to calculate first pixel for each feature map (useful for debugging)')
+    parser.add_argument('--start_bit', type=int, default=8, help='Bit to start search optimal value')
+    parser.add_argument('--end_bit', type=int, default=32, help='Bit to end search of optimal value')
+    parser.add_argument('--use_cache', type=int, default=1, help='Will not recalc optimal bit. Set 0 to recalc.')
+    opt = parser.parse_args()
+    return opt
+
+
 if __name__ == '__main__':
-    bp = get_optimal_bit_for_weights()
+    args = parse_opt()
+    bp = get_optimal_bit_for_weights(args)
     if bp > 0:
         print('Optimal bit size for weights (sign bit is not included) is: {}'.format(bp))
     else:
