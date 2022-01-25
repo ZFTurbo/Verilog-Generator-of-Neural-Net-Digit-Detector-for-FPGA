@@ -395,10 +395,16 @@ def get_image_set():
 
 
 # This function works slow, so it should be run once to find optimal bit
-def get_optimal_bit_for_weights(args):
+def get_optimal_bit_for_weights(args=None):
     print('Read model...')
-    use_cache = args.use_cache
     cache_path = 'weights/optimal_bit.pklz'
+    if args is None:
+        use_cache = 1
+        if not os.path.isfile(cache_path):
+            print('No cache for bit created!')
+            exit()
+    else:
+        use_cache = args.use_cache
     if not os.path.isfile(cache_path) or use_cache == 0:
         model = keras_model_low_weights_digit_detector()
 

@@ -10,7 +10,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(gpu_use)
 
 import numpy as np
 from a01_model_low_weights_digit_detector import keras_model_low_weights_digit_detector
-from r03_find_optimal_bit_for_weights import get_optimal_bit_for_weights
+from r03_find_optimal_bit_for_weights import get_optimal_bit_for_weights, parse_opt
 
 
 def border(directory, razmer):
@@ -1557,7 +1557,7 @@ if __name__ == '__main__':
     for i in range(len(model.layers)):
         layer = model.layers[i]
         if 'Input' in str(type(layer)):
-            input = layer.input_shape[1]*layer.input_shape[2]
+            input = layer.input_shape[0][1]*layer.input_shape[0][2]
         elif 'Conv2D' in str(type(layer)):
             total_conv_layers_number += 1
             conv_inputs.append(layer.input_shape[1])
