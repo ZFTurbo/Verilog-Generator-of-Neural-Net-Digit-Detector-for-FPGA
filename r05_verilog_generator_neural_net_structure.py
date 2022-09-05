@@ -10,7 +10,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "{}".format(gpu_use)
 
 import numpy as np
 from a01_model_low_weights_digit_detector import keras_model_low_weights_digit_detector
-from r03_find_optimal_bit_for_weights import get_optimal_bit_for_weights, parse_opt
+from r03_find_optimal_bit_for_weights import get_optimal_bit_for_weights
 
 
 def border(directory, razmer):
@@ -139,7 +139,7 @@ def maxpooling(directory, razmer, num_conv):
     file.close()
 
 
-def RAM(directory, max_weights_per_layer, num_conv):
+def RAM(directory, max_weights_per_layer, max_mem_shape_0, max_mem_shape_1, num_conv):
     file = open(directory + "RAM.v", 'w')
 
     file.write("module RAM(qp,qtp,qw,dp,dtp,dw,write_addressp,read_addressp,write_addresstp,read_addresstp,write_addressw,read_addressw,we_p,we_tp,we_w,re_p,re_tp,re_w,clk);\n")
@@ -161,8 +161,8 @@ def RAM(directory, max_weights_per_layer, num_conv):
     file.write("input [SIZE_address_pix_t-1:0] write_addresstp, read_addresstp;\n")
     file.write("input [SIZE_address_wei-1:0] write_addressw, read_addressw;\n")
     file.write("input we_p,we_tp,we_w,re_p,re_tp,re_w,clk;\n\n")
-    file.write("reg signed [SIZE_"+str(num_conv)+"-1:0] mem [0:picture_size*picture_size*"+str(int(8/num_conv))+"+picture_size*picture_size-1];\n")
-    file.write("reg signed [(SIZE_2)*"+str(num_conv)+"-1:0] mem_t [0:picture_size*picture_size*4-1];\n")
+    file.write("reg signed [SIZE_"+str(num_conv)+"-1:0] mem [0:"+str(max_mem_shape_0 + max_mem_shape_1)+"-1];\n")
+    file.write("reg signed [(SIZE_2)*"+str(num_conv)+"-1:0] mem_t [0:"+str(max(max_mem_shape_0, max_mem_shape_1))+"-1];\n")
     file.write("reg signed [SIZE_9-1:0] weight [0:"+str(max_weights_per_layer)+"];\n")
     file.write("always @ (posedge clk)\n")
     file.write("    begin\n")
@@ -567,7 +567,7 @@ def RAMtoMEM(directory, max_address_value, steps_count, in_dense_razmer, conv_bl
     file.close()
 
 
-def addressRAM(directory, steps_count, max_address_value):
+def addressRAM(directory, steps_count, conv_mem, conv_filt, dense_inputs, dense_outputs, max_address_value):
     file = open(directory + "addressRAM.v", 'w')
 
     bit_steps_count = len(bin(steps_count)) - 2
@@ -582,16 +582,27 @@ def addressRAM(directory, steps_count, max_address_value):
     file.write("parameter convolution_size = 0;\n")
     file.write("\n")
     file.write("parameter picture_storage_limit = picture_size*picture_size;\n")
-    file.write("parameter convweight = picture_storage_limit + (1*4 + 4*4 + 4*8 + 8*8) * convolution_size;  // all convolution weights [784:1828]\n")
+    #file.write("parameter convweight = picture_storage_limit + (1*4 + 4*4 + 4*8 + 8*8) * convolution_size;  // all convolution weights [784:1828]\n")
     file.write("\n")
-    file.write("parameter conv1 = picture_storage_limit + 1*4 * convolution_size;\n")
-    file.write("parameter conv2 = picture_storage_limit + (1*4 + 4*4) * convolution_size;\n")
-    file.write("parameter conv3 = picture_storage_limit + (1*4 + 4*4 + 4*8) * convolution_size;\n")
-    file.write("parameter conv4 = picture_storage_limit + (1*4 + 4*4 + 4*8 + 8*8) * convolution_size;\n")
-    file.write("parameter conv5 = picture_storage_limit + (1*4 + 4*4 + 4*8 + 8*8 + 8*16) * convolution_size;\n")
-    file.write("parameter conv6 = picture_storage_limit + (1*4 + 4*4 + 4*8 + 8*8 + 8*16 + 16*16) * convolution_size;\n")
+    list_param = []
+    for i in range(len(conv_mem)):
+        for j in range(i+1):
+            if (j != 0): plus = c + '+'
+            else: plus = ''
+            c = plus + (str(conv_mem[j]*conv_filt[j]))
+        file.write("parameter conv"+str(j)+" = picture_storage_limit + ("+ c +") * convolution_size;\n")
+        list_param.append("conv"+str(j))
     file.write("\n")
-    file.write("parameter dense = conv6+176;\n")
+    for i in range(len(dense_inputs)):
+        if (i == 0): plus = 'conv' + str(len(conv_mem)-1) + ' + '
+        else: plus = ''
+        for j in range(i + 1):
+            if (j != 0): plus = plus + c + '+'
+            else: plus = plus + ''
+            c = plus + (str(dense_inputs[j] * dense_outputs[j]))
+        file.write("parameter dense" + str(j) + " =  " + c + ";\n")
+        list_param.append("dense" + str(j))
+    file.write("\n")
     file.write("\n")
     file.write("always @(step)\n")
     file.write("case (step)\n")
@@ -600,41 +611,13 @@ def addressRAM(directory, steps_count, max_address_value):
     file.write("		lastaddr = picture_storage_limit;\n")
     file.write("		re_RAM = 1;\n")
     file.write("	  end \n")
-    file.write("2'd2: begin       //weights conv1 \n")
-    file.write("		firstaddr = picture_storage_limit;\n")
-    file.write("		lastaddr = conv1;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("	  end\n")
-    file.write("3'd4: begin			//weights conv2\n")
-    file.write("		firstaddr = conv1;\n")
-    file.write("      lastaddr = conv2;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("      end		\n")
-    file.write("3'd6: begin			//weights conv3\n")
-    file.write("		firstaddr = conv2;\n")
-    file.write("		lastaddr = conv3;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("	  end\n")
-    file.write("4'd8: begin			//weights conv4\n")
-    file.write("		firstaddr = conv3;\n")
-    file.write("		lastaddr = conv4;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("		end\n")
-    file.write("4'd10: begin		//weights conv5\n")
-    file.write("		firstaddr = conv4;\n")
-    file.write("		lastaddr = conv5;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("	  end\n")
-    file.write("4'd12: begin		//weights conv6\n")
-    file.write("		firstaddr = conv5;\n")
-    file.write("		lastaddr = conv6;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("	  end\n")
-    file.write("4'd14: begin		//weights conv7\n")
-    file.write("		firstaddr = conv6;\n")
-    file.write("		lastaddr =  dense;\n")
-    file.write("		re_RAM = 1;\n")
-    file.write("	  end\n")
+    for i in range(len(conv_mem)+len(dense_inputs)):
+        file.write(str(2 + i*2)+": begin       //weights "+list_param[i]+" \n")
+        if (i == 0): file.write("		firstaddr = picture_storage_limit;\n")
+        else: file.write("		firstaddr = "+list_param[i-1]+";\n")
+        file.write("		lastaddr = "+list_param[i]+";\n")
+        file.write("		re_RAM = 1;\n")
+        file.write("	  end\n")
     file.write("default:\n")
     file.write("			begin\n")
     file.write("				re_RAM = 0;\n")
@@ -661,7 +644,7 @@ def database(directory, max_address_value, razmer, size, list):
     file.write("input signed [SIZE-1:0] dp;\n")
     file.write("input ["+str(bit_max_address_value-1)+":0] address_p;\n")
     file.write("\n")
-    file.write("reg signed [SIZE-1:0] storage ["+str(max_address_value-1)+":0];\n")
+    file.write("reg signed [SIZE-1:0] storage ["+str(max_address_value+razmer*razmer-1)+":0];\n")
     file.write("\n")
     file.write("initial begin\n")
     file.write("\n")
@@ -686,7 +669,7 @@ def database(directory, max_address_value, razmer, size, list):
     file.close()
 
 
-def conv_TOP(directory, razmer, max_conv_input_size, num_conv):
+def conv_TOP(directory, razmer, max_conv_input_size, bit_max_conv_slvl, num_conv):
     file = open(directory + "conv_TOP.v", 'w')
 
     bit_matrix=len(bin(razmer))-2
@@ -732,7 +715,7 @@ def conv_TOP(directory, razmer, max_conv_input_size, num_conv):
     file.write("input [SIZE_address_wei-1:0] memstartw;\n")
     file.write("input [SIZE_address_pix-1:0] memstartzap;                  																	\n")
     file.write("input ["+str(bit_max_conv_input_size-1)+":0] lvl;\n")
-    file.write("input [1:0] slvl;\n")
+    file.write("input [" + str(bit_max_conv_slvl) + ":0] slvl;\n")
     file.write("output reg [SIZE_address_pix-1:0] read_addressp;\n")
     file.write("output reg [SIZE_address_pix_t-1:0] read_addresstp;\n")
     file.write("output reg [SIZE_address_wei-1:0] read_addressw;\n")
@@ -884,7 +867,7 @@ def conv_TOP(directory, razmer, max_conv_input_size, num_conv):
     file.write("								if (i>=2) \n")
     file.write("								begin\n")
     file.write("								we_t=1;\n")
-    file.write("								write_addresstp=i-2+matrix2*num+(slvl*((filt+1)*matrix2)>>(num_conv>>1));\n")
+    file.write("								write_addresstp=i-2+matrix2*num+(slvl*(4*matrix2)>>(num_conv>>1));\n")
     file.write("								if (globmaxp_en)  write_addressp=memstartzap;\n")
     file.write("								else	write_addressp=memstartzap+i-2;\n")
 
@@ -918,7 +901,7 @@ def conv_TOP(directory, razmer, max_conv_input_size, num_conv):
     file.write("					end\n")
     file.write("				3: begin		\n")
     file.write("								re_t=1;\n")
-    file.write("								read_addresstp=i-1+matrix2*num+slvl*(((filt+1)*matrix2>>(num_conv>>1)));\n")
+    file.write("								read_addresstp=i-1+matrix2*num+slvl*((4*matrix2>>(num_conv>>1)));\n")
     file.write("								if (i>=matrix-1)\n")
     file.write("								begin\n")
 
@@ -989,7 +972,7 @@ def conv_TOP(directory, razmer, max_conv_input_size, num_conv):
     file.close()
 
 
-def result(directory,output_neurons_count,num_conv):
+def result(directory,output_neurons_count,dense_outputs,num_conv):
     file = open(directory + "result.v", 'w')
 
     bit_output_neurons_count = len(bin(output_neurons_count))-2
@@ -1038,7 +1021,7 @@ def result(directory,output_neurons_count,num_conv):
             for j in range(num_conv):
                 file.write(" if (p"+str(j+1)+">=buff) begin buff=p"+str(j+1)+"; RESULT="+str(RESULT)+"; end")
                 RESULT+=1
-                if (RESULT==11):
+                if (RESULT==dense_outputs[-1]):
                     stop=1
                     break
             if (stop==1): file.write(" STOP=1;")
@@ -1072,13 +1055,13 @@ def result(directory,output_neurons_count,num_conv):
 
 def TOP(directory, size, razmer, max_address_value, output_neurons_count, max_weights_per_layer,
         total_conv_layers_number, total_maxp_layers_number, max_conv_input_size, in_dense_razmer,
-        out_dense_razmer, max_conv_output_size, layers, num_conv):
+        out_dense_razmer, max_conv_output_size, max_mem_shape_0, max_mem_shape_1, bit_max_conv_slvl, layers, num_conv):
     file = open(directory + "TOP.v", 'w')
 
     bit_max_address_value = len(bin(max_address_value)) - 2
     bit_output_neurons_count = len(bin(output_neurons_count)) - 2
-    bit_address_pix = len(bin(razmer*razmer*8+razmer*razmer)) - 2
-    bit_address_pix_t = len(bin(razmer*razmer*4)) - 2
+    bit_address_pix = len(bin((max_mem_shape_0+max_mem_shape_1)-1)) - 2
+    bit_address_pix_t = len(bin(max(max_mem_shape_0,max_mem_shape_1)-1)) - 2
     bit_max_weights_per_layer = len(bin(max_weights_per_layer)) - 2
     bit_total_conv_layers_number = len(bin(total_conv_layers_number)) - 2
     bit_total_maxp_layers_number = len(bin(total_maxp_layers_number)) - 2
@@ -1122,7 +1105,7 @@ def TOP(directory, size, razmer, max_address_value, output_neurons_count, max_we
     file.write("parameter picture_storage_limit = 0;\n")
     file.write("parameter razmpar = picture_size >> 1;\n")
     file.write("parameter razmpar2  = picture_size >> 2;\n")
-    file.write("parameter picture_storage_limit_2 = ((picture_size*picture_size)*4) >> (num_conv >> 1);\n")
+    file.write("parameter picture_storage_limit_2 = "+str(max_mem_shape_0)+" >> (num_conv >> 1);\n")
     file.write("parameter convolution_size = 9;\n")
     file.write("input clk;\n")
     file.write("input GO;\n")
@@ -1155,7 +1138,7 @@ def TOP(directory, size, razmer, max_address_value, output_neurons_count, max_we
     file.write("reg ["+str(bit_total_maxp_layers_number-1)+":0] TOPlvl_maxp;\n")
     file.write("wire ["+str(bit_TOPlvl_chislo-1)+":0] TOPlvl;\n")
     file.write("reg ["+str(bit_max_conv_input_size-1)+":0] lvl;\n")
-    file.write("reg [1:0] slvl;\n")
+    file.write("reg ["+str(bit_max_conv_slvl)+":0] slvl;\n")
     file.write("reg [2:0] num;\n")
     file.write("reg [2:0] num_maxp;\n")
     file.write("reg [SIZE_address_pix-1:0] memstartp;\n")
@@ -1512,7 +1495,7 @@ if __name__ == '__main__':
     # Where to store neural net verilog
     output_directory = "./verilog/code/neuroset/"
     # Bit size of weights (including sign)
-    bit_size = get_optimal_bit_for_weights() + 1
+    bit_size = 11 #get_optimal_bit_for_weights() + 1
     # Number of convolution blocks (1, 2 or 4). Higher faster, but requires more logic cells.
     num_conv = 1
 
@@ -1522,7 +1505,7 @@ if __name__ == '__main__':
 
     print('Read model...')
     model = keras_model_low_weights_digit_detector()
-    model.load_weights('weights/keras_model_low_weights_digit_detector_rescaled.h5')
+    model.load_weights('weights/weights-007-0.43379-0.85543_test62_rescaled.h5')
 
     list = go_mat_model(model, bit_size-1)
 
@@ -1556,9 +1539,7 @@ if __name__ == '__main__':
     dense_outputs = []
     for i in range(len(model.layers)):
         layer = model.layers[i]
-        if 'Input' in str(type(layer)):
-            input = layer.input_shape[0][1]*layer.input_shape[0][2]
-        elif 'Conv2D' in str(type(layer)):
+        if 'Conv2D' in str(type(layer)):
             total_conv_layers_number += 1
             conv_inputs.append(layer.input_shape[1])
             conv_mem.append(layer.input_shape[3])
@@ -1592,7 +1573,17 @@ if __name__ == '__main__':
     conv_block_size = conv_block_size_1
     max_conv_output_size = max(conv_mem)
     max_conv_input_size = max(conv_filt)
-    max_address_value += input
+    bit_max_conv_slvl = len(bin(int(max_conv_input_size / 4) - 1)) - 2
+    #max_address_value += input
+
+    list_conv_image_shape_0 = []
+    list_conv_image_shape_1 = []
+    for i in range(len(conv_mem)):
+        c = ((np.asarray(conv_inputs))**2)*np.asarray(conv_mem)
+        if (i%2 == 0): list_conv_image_shape_0.append(c)
+        else: list_conv_image_shape_1.append(c)
+    max_mem_shape_0 = np.max(list_conv_image_shape_0)
+    max_mem_shape_1 = np.max(list_conv_image_shape_1)
 
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
@@ -1602,7 +1593,7 @@ if __name__ == '__main__':
     print("Make maxpooling file")
     maxpooling(output_directory, max_input_image_size, num_conv)
     print("Make RAM file")
-    RAM(output_directory, max_weights_per_layer, num_conv)
+    RAM(output_directory, max_weights_per_layer, max_mem_shape_0, max_mem_shape_1, num_conv)
     print("Make dense file")
     dense(output_directory, in_dense_size, out_dense_size, num_conv)
     print("Make conv file")
@@ -1610,14 +1601,14 @@ if __name__ == '__main__':
     print("Make RAMtoMEM file")
     RAMtoMEM(output_directory, max_address_value, steps_count, in_dense_size, conv_block_size, num_conv)
     print("Make addressRAM file")
-    addressRAM(output_directory, steps_count, max_address_value)
+    addressRAM(output_directory, steps_count, conv_mem, conv_filt, dense_inputs, dense_outputs, max_address_value)
     print("Make database file")
     database(output_directory, max_address_value, max_input_image_size, bit_size, list)
     print("Make conv_TOP file")
-    conv_TOP(output_directory, max_input_image_size, max_conv_input_size,num_conv)
+    conv_TOP(output_directory, max_input_image_size, max_conv_input_size, bit_max_conv_slvl, num_conv)
     print("Make result file")
-    result(output_directory, output_neurons_count, num_conv)
+    result(output_directory, output_neurons_count, dense_outputs, num_conv)
     print("Make TOP file")
     TOP(output_directory, bit_size, max_input_image_size, max_address_value, output_neurons_count,
         max_weights_per_layer, total_conv_layers_number, total_maxp_layers_number, max_conv_input_size,
-        in_dense_size, out_dense_size, max_conv_output_size, model.layers, num_conv)
+        in_dense_size, out_dense_size, max_conv_output_size, max_mem_shape_0, max_mem_shape_1, bit_max_conv_slvl, model.layers, num_conv)
