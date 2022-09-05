@@ -1505,7 +1505,7 @@ if __name__ == '__main__':
 
     print('Read model...')
     model = keras_model_low_weights_digit_detector()
-    model.load_weights('weights/weights-007-0.43379-0.85543_test62_rescaled.h5')
+    model.load_weights('weights/keras_model_low_weights_digit_detector_rescaled.h5')
 
     list = go_mat_model(model, bit_size-1)
 
